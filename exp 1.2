@@ -1,0 +1,65 @@
+clc;
+clear;
+close all;
+
+% Sampling and filter specifications
+Fs  = 10000;    % Sampling frequency (Hz)
+Fp  = 3000;     % Passband frequency (Hz)
+Fst = 2000;     % Stopband frequency (Hz)
+
+Rp  = 1;        % Passband ripple (dB)
+Rs  = 60;       % Stopband attenuation (dB)
+
+% Normalize frequencies with respect to Nyquist frequency
+Wp  = Fp / (Fs/2);
+Ws  = Fst / (Fs/2);
+
+% Calculate minimum Butterworth filter order and cutoff frequency
+[N, Wn] = buttord(Wp, Ws, Rp, Rs);
+
+% Design Butterworth high-pass filter
+[b, a] = butter(N, Wn, 'high');
+
+%% Display filter coefficients
+fprintf('Minimum Filter Order (N) = %d\n', N);
+fprintf('Cutoff Frequency (Wn) = %.4f\n', Wn);
+fprintf('Cutoff Frequency in Hz = %.2f Hz\n', Wn*(Fs/2));
+
+fprintf('\nNumerator coefficients (b):\n');
+disp(b);
+
+fprintf('Denominator coefficients (a):\n');
+disp(a);
+
+%% Magnitude and Phase Response
+figure;
+freqz(b, a, 1024, Fs);
+title('Butterworth High-Pass Filter - Magnitude and Phase Response');
+
+%% Impulse Response
+figure;
+[h, n] = impz(b, a, 50);
+
+stem(n, h, 'filled');
+grid on;
+xlabel('Samples');
+ylabel('Amplitude');
+title('Impulse Response');
+
+%% Step Response
+figure;
+stepz(b, a);
+grid on;
+title('Step Response');
+
+%% Group Delay
+figure;
+grpdelay(b, a, 1024, Fs);
+grid on;
+title('Group Delay');
+
+%% Pole-Zero Plot
+figure;
+zplane(b, a);
+grid on;
+title('Pole-Zero Plot');

@@ -1,0 +1,58 @@
+clc;
+clear;
+close all;
+
+% Filter specifications
+Fs  = 10000;    % Sampling frequency (Hz)
+Fp  = 1000;     % Passband frequency (Hz)
+Fst = 1500;     % Stopband frequency (Hz)
+
+Rp = 1;         % Passband ripple (dB)
+Rs = 60;        % Stopband attenuation (dB)
+
+% Normalize frequencies with respect to Nyquist frequency
+Wp = Fp / (Fs/2);
+Ws = Fst / (Fs/2);
+
+% Calculate minimum filter order and cutoff frequency
+[N, Wn] = buttord(Wp, Ws, Rp, Rs);
+
+% Design Butterworth low-pass filter
+[b, a] = butter(N, Wn, 'low');
+
+%% Magnitude and Phase Response
+figure;
+freqz(b, a, 1024, Fs);
+title('Butterworth Low-Pass Filter - Magnitude and Phase Response');
+
+%% Impulse Response
+figure;
+[h, n] = impz(b, a, 50);
+stem(n, h, 'filled');
+grid on;
+xlabel('Samples');
+ylabel('Amplitude');
+title('Impulse Response');
+
+%% Step Response
+figure;
+stepz(b, a);
+grid on;
+title('Step Response');
+
+%% Pole-Zero Plot
+figure;
+zplane(b, a);
+grid on;
+title('Pole-Zero Plot');
+
+%% Display Results
+fprintf('Minimum Filter Order (N) = %d\n', N);
+fprintf('Normalized Cutoff Frequency (Wn) = %.4f\n', Wn);
+fprintf('Cutoff Frequency = %.2f Hz\n', Wn*(Fs/2));
+
+fprintf('\nNumerator coefficients (b):\n');
+disp(b);
+
+fprintf('Denominator coefficients (a):\n');
+disp(a);

@@ -1,0 +1,118 @@
+clc;
+clear;
+close all;
+
+%% Specifications
+Fs = 2000;          % Sampling frequency (Hz)
+Rp = 1;             % Passband ripple (dB)
+Rs = 40;            % Stopband attenuation (dB)
+
+Wp = [300 600];     % Passband edge frequencies (Hz)
+Ws = [200 700];     % Stopband edge frequencies (Hz)
+
+% Normalize frequencies with respect to Nyquist frequency
+Wp_n = Wp / (Fs/2);
+Ws_n = Ws / (Fs/2);
+
+%% Butterworth Bandpass Filter
+[n1, W1] = buttord(Wp_n, Ws_n, Rp, Rs);
+[b1, a1] = butter(n1, W1, 'bandpass');
+
+%% Chebyshev Type-I Bandpass Filter
+[n2, W2] = cheb1ord(Wp_n, Ws_n, Rp, Rs);
+[b2, a2] = cheby1(n2, Rp, W2, 'bandpass');
+
+%% Display Filter Orders
+fprintf('Butterworth Filter Order = %d\n', n1);
+fprintf('Chebyshev Type-I Filter Order = %d\n', n2);
+
+%% Magnitude Response - Butterworth
+figure;
+freqz(b1, a1, 2048, Fs);
+title('Butterworth Bandpass Filter');
+
+%% Magnitude Response - Chebyshev Type-I
+figure;
+freqz(b2, a2, 2048, Fs);
+title('Chebyshev Type-I Bandpass Filter');
+
+%% Group Delay Comparison
+figure;
+
+[gd1, f1] = grpdelay(b1, a1, 2048, Fs);
+[gd2, f2] = grpdelay(b2, a2, 2048, Fs);
+
+plot(f1, gd1, 'LineWidth', 1.5);
+hold on;
+plot(f2, gd2, 'LineWidth', 1.5);
+
+grid on;
+xlabel('Frequency (Hz)');
+ylabel('Group Delay (samples)');
+title('Group Delay Comparison');
+legend('Butterworth', 'Chebyshev Type-I');
+xlim([0 Fs/2]);
+
+%% Pole-Zero Plot
+figure;
+
+subplot(1,2,1);
+zplane(b1, a1);
+title('Butterworth Pole-Zero Plot');
+grid on;
+
+subplot(1,2,2);
+zplane(b2, a2);
+title('Chebyshev Type-I Pole-Zero Plot');
+grid on;
+
+%% Impulse Response
+figure;
+
+subplot(2,1,1);
+impz(b1, a1);
+title('Butterworth Impulse Response');
+xlabel('Samples');
+ylabel('Amplitude');
+grid on;
+
+subplot(2,1,2);
+impz(b2, a2);
+title('Chebyshev Type-I Impulse Response');
+xlabel('Samples');
+ylabel('Amplitude');
+grid on;
+
+%% Pole Magnitude
+poles1 = roots(a1);
+poles2 = roots(a2);
+
+figure;
+
+subplot(1,2,1);
+stem(abs(poles1), 'filled');
+title('Butterworth Pole Magnitudes');
+xlabel('Pole Number');
+ylabel('|Pole|');
+grid on;
+
+subplot(1,2,2);
+stem(abs(poles2), 'filled');
+title('Chebyshev Type-I Pole Magnitudes');
+xlabel('Pole Number');
+ylabel('|Pole|');
+grid on;
+
+%% Display Filter Coefficients
+disp(' ');
+disp('Butterworth Numerator Coefficients (b1):');
+disp(b1);
+
+disp('Butterworth Denominator Coefficients (a1):');
+disp(a1);
+
+disp('Chebyshev Type-I Numerator Coefficients (b2):');
+disp(b2);
+
+disp('Chebyshev Type-I Denominator Coefficients (a2):');
+disp(a2);

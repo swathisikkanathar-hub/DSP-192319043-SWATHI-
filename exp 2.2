@@ -1,0 +1,56 @@
+clc;
+clear;
+close all;
+
+% -------- FILTER SPECIFICATIONS --------
+Rp = 1;        % Passband ripple (dB)
+Rs = 40;       % Stopband attenuation (dB)
+
+Wp = 0.5;      % Passband edge (x pi rad/sample)
+Ws = 0.35;     % Stopband edge (x pi rad/sample)
+
+% -------- FIND MINIMUM FILTER ORDER --------
+[n, Wn] = cheb1ord(Wp, Ws, Rp, Rs);
+
+% -------- DESIGN CHEBYSHEV TYPE-I HIGH-PASS FILTER --------
+[b, a] = cheby1(n, Rp, Wn, 'high');
+
+% -------- DISPLAY FILTER INFORMATION --------
+fprintf('Filter Order = %d\n', n);
+fprintf('Cutoff Frequency = %.4f * pi rad/sample\n', Wn);
+
+% -------- STABILITY CHECK --------
+p = roots(a);
+
+if all(abs(p) < 1)
+    disp('System is STABLE');
+else
+    disp('System is UNSTABLE');
+end
+
+% -------- FREQUENCY RESPONSE --------
+figure;
+freqz(b, a, 1024);
+title('Chebyshev Type-I High-Pass Filter - Frequency Response');
+
+% -------- IMPULSE RESPONSE --------
+figure;
+impz(b, a);
+grid on;
+title('Impulse Response');
+xlabel('Samples');
+ylabel('Amplitude');
+
+% -------- GROUP DELAY --------
+figure;
+grpdelay(b, a, 1024);
+grid on;
+title('Group Delay');
+xlabel('Frequency');
+ylabel('Group Delay (samples)');
+
+% -------- POLE-ZERO PLOT --------
+figure;
+zplane(b, a);
+grid on;
+title('Pole-Zero Plot');

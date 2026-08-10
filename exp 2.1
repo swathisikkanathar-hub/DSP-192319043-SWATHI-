@@ -1,0 +1,57 @@
+clc;
+clear;
+close all;
+
+% Filter specifications
+Wp = 0.4;       % Passband edge frequency (x pi rad/sample)
+Ws = 0.55;      % Stopband edge frequency (x pi rad/sample)
+Rp = 1;         % Passband ripple (dB)
+As = 40;        % Stopband attenuation (dB)
+
+% Calculate minimum filter order and cutoff frequency
+[N, Wn] = cheb1ord(Wp, Ws, Rp, As);
+
+% Design Chebyshev Type-I Low-Pass Filter
+[b, a] = cheby1(N, Rp, Wn, 'low');
+
+% Display filter order and cutoff frequency
+fprintf('Filter Order = %d\n', N);
+fprintf('Cutoff Frequency = %.4f * pi rad/sample\n', Wn);
+
+% Check system stability
+poles = roots(a);
+
+if all(abs(poles) < 1)
+    disp('System is STABLE');
+else
+    disp('System is UNSTABLE');
+end
+
+% -------- GRAPHS --------
+
+% Magnitude and Phase Response
+figure;
+freqz(b, a, 1024);
+title('Chebyshev Type-I Low-Pass Filter');
+
+% Impulse Response
+figure;
+impz(b, a);
+grid on;
+title('Impulse Response');
+xlabel('Samples');
+ylabel('Amplitude');
+
+% Group Delay
+figure;
+grpdelay(b, a, 1024);
+grid on;
+title('Group Delay');
+xlabel('Frequency');
+ylabel('Group Delay (samples)');
+
+% Pole-Zero Plot
+figure;
+zplane(b, a);
+grid on;
+title('Pole-Zero Plot');
